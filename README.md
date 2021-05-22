@@ -1,38 +1,9 @@
-# RPI System sensors
-[![GitHub Release][releases-shield]][releases]
-[![License][license-shield]](LICENSE.md)
+# Linux System sensors
 
-![Project Maintenance][maintenance-shield]
-[![GitHub Activity][commits-shield]][commits]
+forked from [Sennevds/system_sensors](https://github.com/Sennevds/system_sensors), slightly adapted to
+work on my Ubuntu Server 20.04 sys.
 
-[![Community Forum][forum-shield]][forum]
-
-
-I’ve created a simple python script that runs every 60 seconds and sends several system data over MQTT. It uses the MQTT Discovery for Home Assistant so you don’t need to configure anything in Home Assistant if you have discovery enabled for MQTT
-
-It currently logs the following data:
-* CPU usage
-* CPU temperature
-* Disk usage
-* Memory usage
-* Power status of the RPI
-* Last boot
-* Last message received timestamp
-* Swap usage
-* Wifi signal strength
-* Amount of upgrades pending
-* Disk usage of external drives
-* Hostname
-* Host local IP
-* Host OS distro and version
-* CPU Load (1min, 5min and 15min)
-* Network Download & Upload throughput
-
-# System Requirements
-
-You need to have at least __python 3.6__ installed to use System Sensors.
-
-# Installation:
+## Installation:
 1. Clone this repo >> git clone https://github.com/Sennevds/system_sensors.git
 2. cd system_sensors
 3. pip3 install -r requirements.txt
@@ -61,8 +32,8 @@ You need to have at least __python 3.6__ installed to use System Sensors.
     4. sudo systemctl enable system_sensors.service 
     5. sudo systemctl start system_sensors.service
 
-# Home Assistant configuration:
-## Configuration:
+## Home Assistant configuration:
+### Configuration:
 The only config you need in Home Assistant is the following:
 ```yaml
 mqtt:
@@ -70,7 +41,7 @@ mqtt:
   discovery_prefix: homeassistant
 ```
 
-## Lovelace UI example:
+### Lovelace UI example:
 I have used following custom plugins for lovelace:
 * vertical-stack-in-card
 * mini-graph-card
