@@ -10,7 +10,6 @@ import time
 from datetime import timedelta
 from re import findall
 from subprocess import check_output
-from rpi_bad_power import new_under_voltage
 import paho.mqtt.client as mqtt
 import psutil
 import pytz
@@ -40,7 +39,6 @@ with open("/etc/os-release") as f:
 mqttClient = None
 WAIT_TIME_SECONDS = 60
 deviceName = None
-_underVoltage = None
 
 class ProgramKilled(Exception):
     pass
@@ -109,7 +107,6 @@ def updateSensors():
         + f'"memory_use": {get_memory_usage()},'
         + f'"cpu_usage": {get_cpu_usage()},'
         + f'"swap_usage": {get_swap_usage()},'
-        + f'"power_status": "{get_rpi_power_status()}",'
         + f'"last_boot": "{get_last_boot()}",'
         + f'"last_message": "{get_last_message()}",'
         + f'"host_name": "{get_host_name()}",'
@@ -200,10 +197,6 @@ def get_wifi_strength():  # check_output(["/proc/net/wireless", "grep wlan0"])
     if not wifi_strength_value:
         wifi_strength_value = "0"
     return (wifi_strength_value)
-
-
-def get_rpi_power_status():
-    return _underVoltage.get()
 
 def get_host_name():
     return socket.gethostname()
@@ -343,7 +336,7 @@ def send_config_message(mqttClient):
                 + f"\"unique_id\":\"{deviceName}_sensor_temperature\","
                 + f"\"availability_topic\":\"system-sensors/sensor/{deviceName}/availability\","
                 + f"\"device\":{{\"identifiers\":[\"{deviceName}_sensor\"],"
-                + f"\"name\":\"{deviceNameDisplay} Sensors\",\"model\":\"RPI {deviceNameDisplay}\", \"manufacturer\":\"RPI\"}},"
+                + f"\"name\":\"{deviceNameDisplay} Sensors\",\"model\":\"{deviceNameDisplay}\", \"manufacturer\":\"Dell\"}},"
                 + f"\"icon\":\"mdi:thermometer\"}}",
         qos=1,
         retain=True,
@@ -358,7 +351,7 @@ def send_config_message(mqttClient):
                 + f"\"unique_id\":\"{deviceName}_sensor_disk_use\","
                 + f"\"availability_topic\":\"system-sensors/sensor/{deviceName}/availability\","
                 + f"\"device\":{{\"identifiers\":[\"{deviceName}_sensor\"],"
-                + f"\"name\":\"{deviceNameDisplay} Sensors\",\"model\":\"RPI {deviceNameDisplay}\", \"manufacturer\":\"RPI\"}},"
+                + f"\"name\":\"{deviceNameDisplay} Sensors\",\"model\":\"{deviceNameDisplay}\", \"manufacturer\":\"Dell\"}},"
                 + f"\"icon\":\"mdi:micro-sd\"}}",
         qos=1,
         retain=True,
@@ -373,7 +366,7 @@ def send_config_message(mqttClient):
                 + f"\"unique_id\":\"{deviceName}_sensor_memory_use\","
                 + f"\"availability_topic\":\"system-sensors/sensor/{deviceName}/availability\","
                 + f"\"device\":{{\"identifiers\":[\"{deviceName}_sensor\"],"
-                + f"\"name\":\"{deviceNameDisplay} Sensors\",\"model\":\"RPI {deviceNameDisplay}\", \"manufacturer\":\"RPI\"}},"
+                + f"\"name\":\"{deviceNameDisplay} Sensors\",\"model\":\"{deviceNameDisplay}\", \"manufacturer\":\"Dell\"}},"
                 + f"\"icon\":\"mdi:memory\"}}",
         qos=1,
         retain=True,
@@ -388,7 +381,7 @@ def send_config_message(mqttClient):
                 + f"\"unique_id\":\"{deviceName}_sensor_cpu_usage\","
                 + f"\"availability_topic\":\"system-sensors/sensor/{deviceName}/availability\","
                 + f"\"device\":{{\"identifiers\":[\"{deviceName}_sensor\"],"
-                + f"\"name\":\"{deviceNameDisplay} Sensors\",\"model\":\"RPI {deviceNameDisplay}\", \"manufacturer\":\"RPI\"}},"
+                + f"\"name\":\"{deviceNameDisplay} Sensors\",\"model\":\"{deviceNameDisplay}\", \"manufacturer\":\"Dell\"}},"
                 + f"\"icon\":\"mdi:memory\"}}",
         qos=1,
         retain=True,
@@ -402,7 +395,7 @@ def send_config_message(mqttClient):
                 + f"\"unique_id\":\"{deviceName}_sensor_load_1m\","
                 + f"\"availability_topic\":\"system-sensors/sensor/{deviceName}/availability\","
                 + f"\"device\":{{\"identifiers\":[\"{deviceName}_sensor\"],"
-                + f"\"name\":\"{deviceNameDisplay} Sensors\",\"model\":\"RPI {deviceNameDisplay}\", \"manufacturer\":\"RPI\"}},"
+                + f"\"name\":\"{deviceNameDisplay} Sensors\",\"model\":\"{deviceNameDisplay}\", \"manufacturer\":\"Dell\"}},"
                 + f"\"icon\":\"mdi:cpu-64-bit\"}}",
         qos=1,
         retain=True,
@@ -416,7 +409,7 @@ def send_config_message(mqttClient):
                 + f"\"unique_id\":\"{deviceName}_sensor_load_5m\","
                 + f"\"availability_topic\":\"system-sensors/sensor/{deviceName}/availability\","
                 + f"\"device\":{{\"identifiers\":[\"{deviceName}_sensor\"],"
-                + f"\"name\":\"{deviceNameDisplay} Sensors\",\"model\":\"RPI {deviceNameDisplay}\", \"manufacturer\":\"RPI\"}},"
+                + f"\"name\":\"{deviceNameDisplay} Sensors\",\"model\":\"{deviceNameDisplay}\", \"manufacturer\":\"Dell\"}},"
                 + f"\"icon\":\"mdi:cpu-64-bit\"}}",
         qos=1,
         retain=True,
@@ -430,7 +423,7 @@ def send_config_message(mqttClient):
                 + f"\"unique_id\":\"{deviceName}_sensor_load_15m\","
                 + f"\"availability_topic\":\"system-sensors/sensor/{deviceName}/availability\","
                 + f"\"device\":{{\"identifiers\":[\"{deviceName}_sensor\"],"
-                + f"\"name\":\"{deviceNameDisplay} Sensors\",\"model\":\"RPI {deviceNameDisplay}\", \"manufacturer\":\"RPI\"}},"
+                + f"\"name\":\"{deviceNameDisplay} Sensors\",\"model\":\"{deviceNameDisplay}\", \"manufacturer\":\"Dell\"}},"
                 + f"\"icon\":\"mdi:cpu-64-bit\"}}",
         qos=1,
         retain=True,
@@ -445,7 +438,7 @@ def send_config_message(mqttClient):
                 + f"\"unique_id\":\"{deviceName}_sensor_net_tx\","
                 + f"\"availability_topic\":\"system-sensors/sensor/{deviceName}/availability\","
                 + f"\"device\":{{\"identifiers\":[\"{deviceName}_sensor\"],"
-                + f"\"name\":\"{deviceNameDisplay} Sensors\",\"model\":\"RPI {deviceNameDisplay}\", \"manufacturer\":\"RPI\"}},"
+                + f"\"name\":\"{deviceNameDisplay} Sensors\",\"model\":\"{deviceNameDisplay}\", \"manufacturer\":\"Dell\"}},"
                 + f"\"icon\":\"mdi:server-network\"}}",
         qos=1,
         retain=True,
@@ -460,7 +453,7 @@ def send_config_message(mqttClient):
                 + f"\"unique_id\":\"{deviceName}_sensor_net_rx\","
                 + f"\"availability_topic\":\"system-sensors/sensor/{deviceName}/availability\","
                 + f"\"device\":{{\"identifiers\":[\"{deviceName}_sensor\"],"
-                + f"\"name\":\"{deviceNameDisplay} Sensors\",\"model\":\"RPI {deviceNameDisplay}\", \"manufacturer\":\"RPI\"}},"
+                + f"\"name\":\"{deviceNameDisplay} Sensors\",\"model\":\"{deviceNameDisplay}\", \"manufacturer\":\"Dell\"}},"
                 + f"\"icon\":\"mdi:server-network\"}}",
         qos=1,
         retain=True,
@@ -475,7 +468,7 @@ def send_config_message(mqttClient):
                 + f"\"unique_id\":\"{deviceName}_sensor_swap_usage\","
                 + f"\"availability_topic\":\"system-sensors/sensor/{deviceName}/availability\","
                 + f"\"device\":{{\"identifiers\":[\"{deviceName}_sensor\"],"
-                + f"\"name\":\"{deviceNameDisplay} Sensors\",\"model\":\"RPI {deviceNameDisplay}\", \"manufacturer\":\"RPI\"}},"
+                + f"\"name\":\"{deviceNameDisplay} Sensors\",\"model\":\"{deviceNameDisplay}\", \"manufacturer\":\"Dell\"}},"
                 + f"\"icon\":\"mdi:harddisk\"}}",
         qos=1,
         retain=True,
@@ -490,7 +483,7 @@ def send_config_message(mqttClient):
                 + f"\"unique_id\":\"{deviceName}_sensor_power_status\","
                 + f"\"availability_topic\":\"system-sensors/sensor/{deviceName}/availability\","
                 + f"\"device\":{{\"identifiers\":[\"{deviceName}_sensor\"],"
-                + f"\"name\":\"{deviceNameDisplay} Sensors\",\"model\":\"RPI {deviceNameDisplay}\", \"manufacturer\":\"RPI\"}}"
+                + f"\"name\":\"{deviceNameDisplay} Sensors\",\"model\":\"{deviceNameDisplay}\", \"manufacturer\":\"Dell\"}}"
                 + f"}}",
         qos=1,
         retain=True,
@@ -506,7 +499,7 @@ def send_config_message(mqttClient):
                 + f"\"unique_id\":\"{deviceName}_sensor_last_boot\","
                 + f"\"availability_topic\":\"system-sensors/sensor/{deviceName}/availability\","
                 + f"\"device\":{{\"identifiers\":[\"{deviceName}_sensor\"],"
-                + f"\"name\":\"{deviceNameDisplay} Sensors\",\"model\":\"RPI {deviceNameDisplay}\", \"manufacturer\":\"RPI\"}},"
+                + f"\"name\":\"{deviceNameDisplay} Sensors\",\"model\":\"{deviceNameDisplay}\", \"manufacturer\":\"Dell\"}},"
                 + f"\"icon\":\"mdi:clock\"}}",
         qos=1,
         retain=True,
@@ -519,7 +512,7 @@ def send_config_message(mqttClient):
                 + f"\"unique_id\":\"{deviceName}_sensor_host_name\","
                 + f"\"availability_topic\":\"system-sensors/sensor/{deviceName}/availability\","
                 + f"\"device\":{{\"identifiers\":[\"{deviceName}_sensor\"],"
-                + f"\"name\":\"{deviceNameDisplay} Sensors\",\"model\":\"RPI {deviceNameDisplay}\", \"manufacturer\":\"RPI\"}},"
+                + f"\"name\":\"{deviceNameDisplay} Sensors\",\"model\":\"{deviceNameDisplay}\", \"manufacturer\":\"Dell\"}},"
                 + f"\"icon\":\"mdi:card-account-details\"}}",
         qos=1,
         retain=True,
@@ -532,7 +525,7 @@ def send_config_message(mqttClient):
                 + f"\"unique_id\":\"{deviceName}_sensor_host_ip\","
                 + f"\"availability_topic\":\"system-sensors/sensor/{deviceName}/availability\","
                 + f"\"device\":{{\"identifiers\":[\"{deviceName}_sensor\"],"
-                + f"\"name\":\"{deviceNameDisplay} Sensors\",\"model\":\"RPI {deviceNameDisplay}\", \"manufacturer\":\"RPI\"}},"
+                + f"\"name\":\"{deviceNameDisplay} Sensors\",\"model\":\"{deviceNameDisplay}\", \"manufacturer\":\"Dell\"}},"
                 + f"\"icon\":\"mdi:lan\"}}",
         qos=1,
         retain=True,
@@ -545,7 +538,7 @@ def send_config_message(mqttClient):
                 + f"\"unique_id\":\"{deviceName}_sensor_host_os\","
                 + f"\"availability_topic\":\"system-sensors/sensor/{deviceName}/availability\","
                 + f"\"device\":{{\"identifiers\":[\"{deviceName}_sensor\"],"
-                + f"\"name\":\"{deviceNameDisplay} Sensors\",\"model\":\"RPI {deviceNameDisplay}\", \"manufacturer\":\"RPI\"}},"
+                + f"\"name\":\"{deviceNameDisplay} Sensors\",\"model\":\"{deviceNameDisplay}\", \"manufacturer\":\"Dell\"}},"
                 + f"\"icon\":\"mdi:linux\"}}",
         qos=1,
         retain=True,
@@ -558,7 +551,7 @@ def send_config_message(mqttClient):
                 + f"\"unique_id\":\"{deviceName}_sensor_host_arch\","
                 + f"\"availability_topic\":\"system-sensors/sensor/{deviceName}/availability\","
                 + f"\"device\":{{\"identifiers\":[\"{deviceName}_sensor\"],"
-                + f"\"name\":\"{deviceNameDisplay} Sensors\",\"model\":\"RPI {deviceNameDisplay}\", \"manufacturer\":\"RPI\"}},"
+                + f"\"name\":\"{deviceNameDisplay} Sensors\",\"model\":\"{deviceNameDisplay}\", \"manufacturer\":\"Dell\"}},"
                 + f"\"icon\":\"mdi:chip\"}}",
         qos=1,
         retain=True,
@@ -572,7 +565,7 @@ def send_config_message(mqttClient):
                 + f"\"unique_id\":\"{deviceName}_sensor_last_message\","
                 + f"\"availability_topic\":\"system-sensors/sensor/{deviceName}/availability\","
                 + f"\"device\":{{\"identifiers\":[\"{deviceName}_sensor\"],"
-                + f"\"name\":\"{deviceNameDisplay} Sensors\",\"model\":\"RPI {deviceNameDisplay}\", \"manufacturer\":\"RPI\"}},"
+                + f"\"name\":\"{deviceNameDisplay} Sensors\",\"model\":\"{deviceNameDisplay}\", \"manufacturer\":\"Dell\"}},"
                 + f"\"icon\":\"mdi:clock-check\"}}",
         qos=1,
         retain=True,
@@ -593,7 +586,7 @@ def send_config_message(mqttClient):
                         + f"\"unique_id\":\"{deviceName}_sensor_updates\","
                         + f"\"availability_topic\":\"system-sensors/sensor/{deviceName}/availability\","
                         + f"\"device\":{{\"identifiers\":[\"{deviceName}_sensor\"],"
-                        + f"\"name\":\"{deviceNameDisplay} Sensors\",\"model\":\"RPI {deviceNameDisplay}\", \"manufacturer\":\"RPI\"}},"
+                        + f"\"name\":\"{deviceNameDisplay} Sensors\",\"model\":\"{deviceNameDisplay}\", \"manufacturer\":\"Dell\"}},"
                         + f"\"icon\":\"mdi:cellphone-arrow-down\"}}",
                 qos=1,
                 retain=True,
@@ -611,7 +604,7 @@ def send_config_message(mqttClient):
                     + f"\"unique_id\":\"{deviceName}_sensor_wifi_strength\","
                     + f"\"availability_topic\":\"system-sensors/sensor/{deviceName}/availability\","
                     + f"\"device\":{{\"identifiers\":[\"{deviceName}_sensor\"],"
-                    + f"\"name\":\"{deviceNameDisplay} Sensors\",\"model\":\"RPI {deviceNameDisplay}\", \"manufacturer\":\"RPI\"}},"
+                    + f"\"name\":\"{deviceNameDisplay} Sensors\",\"model\":\"{deviceNameDisplay}\", \"manufacturer\":\"Dell\"}},"
                     + f"\"icon\":\"mdi:wifi\"}}",
             qos=1,
             retain=True,
@@ -628,7 +621,7 @@ def send_config_message(mqttClient):
                         + f"\"unique_id\":\"{deviceName}_sensor_disk_use_{drive.lower()}\","
                         + f"\"availability_topic\":\"system-sensors/sensor/{deviceName}/availability\","
                         + f"\"device\":{{\"identifiers\":[\"{deviceName}_sensor\"],"
-                        + f"\"name\":\"{deviceNameDisplay} Sensors\",\"model\":\"RPI {deviceNameDisplay}\", \"manufacturer\":\"RPI\"}},"
+                        + f"\"name\":\"{deviceNameDisplay} Sensors\",\"model\":\"{deviceNameDisplay}\", \"manufacturer\":\"Dell\"}},"
                         + f"\"icon\":\"mdi:harddisk\"}}",
                 qos=1,
                 retain=True,
@@ -684,7 +677,7 @@ if __name__ == "__main__":
         send_config_message(mqttClient)
     except:
         write_message_to_console("something whent wrong")
-    _underVoltage = new_under_voltage()
+    #_underVoltage = new_under_voltage()
     job = Job(interval=timedelta(seconds=WAIT_TIME_SECONDS), execute=updateSensors)
     job.start()
 
